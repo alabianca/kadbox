@@ -14,6 +14,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
+	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/multiformats/go-multiaddr"
 	"sync"
 )
@@ -53,13 +54,14 @@ func New(ctx context.Context, r core.Repo) (*Node, error) {
 	identity := libp2p.Identity(key)
 
 	listenAddr := libp2p.ListenAddrStrings(r.ListenAddrs...)
-
+	security := libp2p.Security(secio.ID, secio.New)
 
 	n.host, err = libp2p.New(
 		n.Context,
 		routing,
 		identity,
 		listenAddr,
+		security,
 	)
 
 	if err != nil {
@@ -104,6 +106,7 @@ func (n *Node) Bootstrap() error {
 	var nerr int
 	for err := range merged {
 		if err != nil {
+			fmt.Printf("Gateway connection error: %s\n", err)
 			nerr++
 		}
 	}
