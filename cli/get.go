@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/alabianca/kadbox/core"
 	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -24,7 +26,8 @@ var getCmd = &cobra.Command{
 }
 
 func runGet(args []string) int {
-	fileHash := args[0]
+	// must add some validation here
+	fileHash := strings.Split(args[0], core.Scheme)[1]
 
 	repo, err := getClosestConfigFileRelativeToWd()
 	if err != nil {

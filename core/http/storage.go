@@ -83,7 +83,8 @@ func (s *StorageService) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "Published in the network. File hash %s", fileHash)
+	fmt.Fprintf(w, "Published in the network. \n")
+	fmt.Fprintf(w, "File identifier: %s%s\n", core.Scheme, fileHash)
 }
 
 func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
