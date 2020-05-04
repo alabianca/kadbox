@@ -112,7 +112,7 @@ func createNewConfigFromDefault() core.Repo {
 	}
 
 	repo := core.Repo{
-		Gateways:    []string{"/ip4/127.0.0.1/tcp/4000/p2p/QmQnAZsyiJSovuqg8zjP3nKdm6Pwb75Mpn8HnGyD5WYZ15"},
+		Gateways:    []string{"/ip4/134.209.171.195/tcp/5000/p2p/QmaVXTwU1j2PLquaRkHJUrG5A9HojTmwcWrdYfinTcswN7"},
 		ListenAddrs: []string{"/ip4/0.0.0.0/tcp/0"},
 		Identity: core.Identity{
 			PrivateKey: hex.EncodeToString(marshalled),
