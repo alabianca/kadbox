@@ -75,6 +75,9 @@ func runStart() int {
 		//	node.DefaultNATManager(),
 		//	node.EnableAutoRelay(),
 		//}...)
+	} else {
+		options = append(options, node.EnableRelay())
+		options = append(options, node.StaticRelays(repo.Gateways...)) // use the gateways as relays
 	}
 
 

@@ -7,10 +7,12 @@ import (
 	relay "github.com/libp2p/go-libp2p-circuit"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
+	"github.com/multiformats/go-multiaddr"
 )
 
 func noopConfig(cfg *libp2p.Config) error {
@@ -71,6 +73,33 @@ func DefaultNATManager() Option {
 func EnableAutoRelay() Option {
 	return func(n *Node) libp2p.Option {
 		return libp2p.EnableAutoRelay()
+	}
+}
+
+func EnableRelay() Option {
+	return func(n *Node) libp2p.Option {
+		return libp2p.EnableRelay()
+	}
+}
+
+func StaticRelays(maAddrs ...string) Option {
+	var relays []peer.AddrInfo
+	for _, addr := range maAddrs {
+		ma, err := multiaddr.NewMultiaddr(addr)
+		if err != nil {
+			continue
+		}
+
+		info, err := peer.AddrInfoFromP2pAddr(ma)
+		if err != nil {
+			continue
+		}
+
+		relays = append(relays, *info)
+	}
+
+	return func(n *Node) libp2p.Option {
+		return libp2p.StaticRelays(relays)
 	}
 }
 
