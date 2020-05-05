@@ -11,15 +11,18 @@ import (
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
+	discovery "github.com/libp2p/go-libp2p-discovery"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/multiformats/go-multiaddr"
 	"sync"
 )
 
 type Node struct {
-	Gateways []string
-	host     host.Host
-	dht      *dual.DHT
+	Gateways         []string
+	nodeContext      context.Context
+	routingDiscovery *discovery.RoutingDiscovery
+	host             host.Host
+	dht              *dual.DHT
 }
 
 func New(ctx context.Context, opts ...Option) (*Node, error) {
@@ -31,6 +34,7 @@ func New(ctx context.Context, opts ...Option) (*Node, error) {
 	}
 
 	var err error
+	n.nodeContext = ctx
 	n.host, err = libp2p.New(
 		ctx,
 		p2pOpts...,
@@ -45,6 +49,10 @@ func New(ctx context.Context, opts ...Option) (*Node, error) {
 
 func (n *Node) SetStreamHandler(handler network.StreamHandler) {
 	n.host.SetStreamHandler(core.Protocol, handler)
+}
+
+func (n *Node) Context() context.Context {
+	return n.nodeContext
 }
 
 func (n *Node) Bootstrap(ctx context.Context) error {
@@ -90,13 +98,21 @@ func (n *Node) Bootstrap(ctx context.Context) error {
 	return nil
 }
 
-func (n *Node) PutValue(ctx context.Context, key string, value []byte) error {
-	return n.dht.PutValue(ctx, key, value)
+func (n *Node) Advertise(key string) {
+	discovery.Advertise(n.nodeContext, n.routingDiscovery, key)
 }
 
-func (n *Node) GetValue(ctx context.Context, key string) ([]byte, error) {
-	return n.dht.GetValue(ctx, key)
+func (n *Node) FindPeers(key string) (<-chan peer.AddrInfo, error) {
+	return n.routingDiscovery.FindPeers(n.nodeContext, key)
 }
+
+//func (n *Node) PutValue(ctx context.Context, key string, value []byte) error {
+//	return n.dht.PutValue(ctx, key, value)
+//}
+//
+//func (n *Node) GetValue(ctx context.Context, key string) ([]byte, error) {
+//	return n.dht.GetValue(ctx, key)
+//}
 
 func (n *Node) NewStream(ctx context.Context, peerID peer.ID, protocols ...protocol.ID) (network.Stream, error) {
 	return n.host.NewStream(ctx, peerID, protocols...)
@@ -129,4 +145,3 @@ func (n *Node) bootstrapConnect(ctx context.Context, addr string) chan error {
 
 	return out
 }
-

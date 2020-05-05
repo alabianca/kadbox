@@ -69,18 +69,19 @@ func (s *StorageService) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.Node.LocalPeerID().Marshal()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 75)", err)
-		return
-	}
+	//id, err := s.Node.LocalPeerID().Marshal()
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 75)", err)
+	//	return
+	//}
+	s.Node.Advertise(core.ProtocolKey(fileHash))
 
-	if err := s.Node.PutValue(r.Context(), core.ProtocolKey(fileHash), id); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 81)", err)
-		return
-	}
+	//if err := s.Node.PutValue(r.Context(), core.ProtocolKey(fileHash), id); err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 81)", err)
+	//	return
+	//}
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, "Published in the network. \n")
@@ -95,51 +96,67 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bts, err := s.Node.GetValue(r.Context(), core.ProtocolKey(fileHash))
+	peerChan, err := s.Node.FindPeers(core.ProtocolKey(fileHash))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Could not find any peers that advertise %s\n", fileHash)
 		return
 	}
 
-	id, err := core.PeerIDFromBytes(bts)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-		return
-	}
-
-	stream, err := s.Node.NewStream(r.Context(), id, core.Protocol)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-		return
-	}
-
-	defer stream.Close()
-
-
-	kadp := s.Protocol.HandleStream(stream)
-	reader, errc := kadp.Want(fileHash)
-
-	copied := make(chan struct{})
-	go func() {
-		defer close(copied)
-		buf := new(bytes.Buffer)
-		if _, err := io.Copy(buf, reader); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
-			return
+	for peer := range peerChan {
+		// don't care about myself
+		if peer.ID == s.Node.LocalPeerID() {
+			continue
 		}
-		w.WriteHeader(http.StatusOK)
-		io.Copy(w, buf)
-	}()
 
-	select {
-	case err := <- errc:
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
-	case <- copied:
-		fmt.Println("Copied...")
+		fmt.Printf("found peer %s\n", peer.ID.Pretty())
 	}
+
+	//bts, err := s.Node.GetValue(r.Context(), core.ProtocolKey(fileHash))
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+	//	return
+	//}
+	//
+	//id, err := core.PeerIDFromBytes(bts)
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+	//	return
+	//}
+	//
+	//stream, err := s.Node.NewStream(r.Context(), id, core.Protocol)
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+	//	return
+	//}
+	//
+	//defer stream.Close()
+	//
+	//
+	//kadp := s.Protocol.HandleStream(stream)
+	//reader, errc := kadp.Want(fileHash)
+	//
+	//copied := make(chan struct{})
+	//go func() {
+	//	defer close(copied)
+	//	buf := new(bytes.Buffer)
+	//	if _, err := io.Copy(buf, reader); err != nil {
+	//		w.WriteHeader(http.StatusInternalServerError)
+	//		fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
+	//		return
+	//	}
+	//	w.WriteHeader(http.StatusOK)
+	//	io.Copy(w, buf)
+	//}()
+	//
+	//select {
+	//case err := <- errc:
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
+	//case <- copied:
+	//	fmt.Println("Copied...")
+	//}
 }

@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/alabianca/kadbox/core"
 	"github.com/libp2p/go-libp2p"
+	relay "github.com/libp2p/go-libp2p-circuit"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/routing"
+	discovery "github.com/libp2p/go-libp2p-discovery"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 )
@@ -26,6 +28,9 @@ func Routing(ctx context.Context) Option {
 				h,
 				dht.NamespacedValidator(core.Protocol, &NullValidator{}),
 				dht.ProtocolPrefix(core.Protocol),)
+
+			// also set up the node's routing discovery
+			n.routingDiscovery = discovery.NewRoutingDiscovery(n.dht)
 
 			return n.dht, err
 		})
@@ -66,5 +71,11 @@ func DefaultNATManager() Option {
 func EnableAutoRelay() Option {
 	return func(n *Node) libp2p.Option {
 		return libp2p.EnableAutoRelay()
+	}
+}
+
+func EnableRelay() Option {
+	return func(n *Node) libp2p.Option {
+		return libp2p.EnableRelay(relay.OptActive, relay.OptHop)
 	}
 }

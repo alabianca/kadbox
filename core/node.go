@@ -13,7 +13,7 @@ type Node interface {
 
 type NodeClient interface {
 	LocalPeerID() peer.ID
-	PutValue(ctx context.Context, key string, value []byte) error
-	GetValue(ctx context.Context, key string) ([]byte, error)
+	Advertise(key string)
+	FindPeers(key string) (<-chan peer.AddrInfo, error)
 	NewStream(ctx context.Context, id peer.ID, protocols ...protocol.ID) (network.Stream, error)
 }
