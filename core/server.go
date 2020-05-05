@@ -1,6 +1,9 @@
 package core
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 type ServerOption func(s *Server)
 
@@ -37,8 +40,8 @@ func NewServer(appContext AppContext, handler http.Handler, opts ...ServerOption
 	return &s
 }
 
-func (s *Server) ListenAndServe() error {
-	err := s.AppContext.Node.Bootstrap()
+func (s *Server) ListenAndServe(ctx context.Context) error {
+	err := s.AppContext.Node.Bootstrap(ctx)
 	if err != nil {
 		return err
 	}

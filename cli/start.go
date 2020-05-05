@@ -8,6 +8,7 @@ import (
 	"github.com/alabianca/kadbox/core/kadprotocol"
 	"github.com/alabianca/kadbox/core/node"
 	"github.com/libp2p/go-libp2p-core/network"
+	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/spf13/cobra"
 	"net"
 	"os"
@@ -45,7 +46,26 @@ func runStart() int {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	nde, err := node.New(ctx, repo)
+	key, err := repo.Identity.GetPrivateKey()
+	if err != nil {
+		return printError(err)
+	}
+
+	// node options
+	routing := node.Routing(ctx)
+	gatways := node.Gateways(repo.Gateways...)
+	identity := node.Identity(key)
+	listenAddresses := node.ListenAddr(repo.ListenAddrs...)
+	security := node.Security(secio.ID, secio.New)
+
+
+	nde, err := node.New(ctx,
+		routing,
+		gatways,
+		identity,
+		listenAddresses,
+		security,
+	)
 	if err != nil {
 		return printError(err)
 	}
@@ -70,7 +90,7 @@ func runStart() int {
 		})
 	}()
 
-	if err := server.ListenAndServe(); err != nil {
+	if err := server.ListenAndServe(ctx); err != nil {
 		return printError(err)
 	}
 

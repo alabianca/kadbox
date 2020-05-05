@@ -6,62 +6,33 @@ import (
 	"fmt"
 	"github.com/alabianca/kadbox/core"
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-	"github.com/libp2p/go-libp2p-core/routing"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
-	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/multiformats/go-multiaddr"
 	"sync"
 )
 
 type Node struct {
 	Gateways []string
-	Context  context.Context
 	host     host.Host
 	dht      *dual.DHT
 }
 
-func New(ctx context.Context, r core.Repo) (*Node, error) {
+func New(ctx context.Context, opts ...Option) (*Node, error) {
 	var n Node
-	n.Gateways = r.Gateways
-	n.Context = ctx
 
-	routing := libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-		var err error
-		n.dht, err = dual.New(
-			n.Context,
-			h,
-			dht.NamespacedValidator(core.Protocol, &NullValidator{}),
-			dht.ProtocolPrefix(core.Protocol),
-		)
-
-		return n.dht, err
-	})
-
-	var err error
-	var key crypto.PrivKey
-
-	key, err = r.Identity.GetPrivateKey()
-	if err != nil {
-		return nil, err
+	var p2pOpts []libp2p.Option
+	for _, opt := range opts {
+		p2pOpts = append(p2pOpts, opt(&n))
 	}
 
-	identity := libp2p.Identity(key)
-
-	listenAddr := libp2p.ListenAddrStrings(r.ListenAddrs...)
-	security := libp2p.Security(secio.ID, secio.New)
-
+	var err error
 	n.host, err = libp2p.New(
-		n.Context,
-		routing,
-		identity,
-		listenAddr,
-		security,
+		ctx,
+		p2pOpts...,
 	)
 
 	if err != nil {
@@ -75,14 +46,14 @@ func (n *Node) SetStreamHandler(handler network.StreamHandler) {
 	n.host.SetStreamHandler(core.Protocol, handler)
 }
 
-func (n *Node) Bootstrap() error {
+func (n *Node) Bootstrap(ctx context.Context) error {
 	if len(n.Gateways) == 0 {
 		return nil
 	}
 
 	var errcs []chan error
 	for _, addr := range n.Gateways {
-		errcs = append(errcs, n.bootstrapConnect(addr))
+		errcs = append(errcs, n.bootstrapConnect(ctx, addr))
 	}
 
 	merged := make(chan error)
@@ -134,7 +105,7 @@ func (n *Node) LocalPeerID() peer.ID {
 	return n.host.ID()
 }
 
-func (n *Node) bootstrapConnect(addr string) chan error {
+func (n *Node) bootstrapConnect(ctx context.Context, addr string) chan error {
 	out := make(chan error)
 	go func() {
 		ma, err := multiaddr.NewMultiaddr(addr)
@@ -146,7 +117,7 @@ func (n *Node) bootstrapConnect(addr string) chan error {
 			return
 		}
 
-		out <- n.host.Connect(n.Context, *info)
+		out <- n.host.Connect(ctx, *info)
 		fmt.Printf("Connected to bootstrap peer %s\n", ma)
 	}()
 

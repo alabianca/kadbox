@@ -8,7 +8,7 @@ import (
 )
 
 type Node interface {
-	Bootstrap() error
+	Bootstrap(ctx context.Context) error
 }
 
 type NodeClient interface {
