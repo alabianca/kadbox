@@ -3,9 +3,9 @@ module github.com/alabianca/kadbox
 go 1.14
 
 require (
-	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.3.1
 	github.com/libp2p/go-libp2p v0.8.3
+	github.com/libp2p/go-libp2p-autonat v0.2.2
+	github.com/libp2p/go-libp2p-autonat-svc v0.1.0
 	github.com/libp2p/go-libp2p-core v0.5.2
 	github.com/libp2p/go-libp2p-kad-dht v0.7.10
 	github.com/libp2p/go-libp2p-secio v0.2.2

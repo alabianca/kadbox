@@ -7,6 +7,7 @@ import (
 	"github.com/alabianca/kadbox/core/http"
 	"github.com/alabianca/kadbox/core/kadprotocol"
 	"github.com/alabianca/kadbox/core/node"
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/network"
 	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/spf13/cobra"
@@ -15,8 +16,13 @@ import (
 	"strconv"
 )
 
+var (
+	isGateway *bool
+)
+
 func init() {
 	serverCmd.AddCommand(startCmd)
+	isGateway = startCmd.Flags().BoolP("gateway", "g", false, "specify true if this node should be a gateway node")
 }
 
 var startCmd = &cobra.Command{
@@ -52,22 +58,35 @@ func runStart() int {
 	}
 
 	// node options
-	routing := node.Routing(ctx)
-	gatways := node.Gateways(repo.Gateways...)
-	identity := node.Identity(key)
-	listenAddresses := node.ListenAddr(repo.ListenAddrs...)
-	security := node.Security(secio.ID, secio.New)
+	options := []node.Option{
+			node.Routing(ctx),
+			node.Gateways(repo.Gateways...),
+			node.Identity(key),
+			node.ListenAddr(repo.ListenAddrs...),
+			node.Security(secio.ID, secio.New),
+	}
+
+	// if we are not a gateway we may be behind a NAT. so try to open a port
+	if !*isGateway {
+		options = append(options, []node.Option{
+			node.DefaultNATManager(),
+			node.EnableAutoRelay(),
+		}...)
+	}
 
 
-	nde, err := node.New(ctx,
-		routing,
-		gatways,
-		identity,
-		listenAddresses,
-		security,
-	)
+	nde, err := node.New(ctx, options...)
 	if err != nil {
 		return printError(err)
+	}
+
+	// if we are a gateway we should try to help other peers find
+	// out if they sit behind nats
+	if *isGateway {
+		fmt.Println("Running as a gateway")
+		if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
+			return printError(err)
+		}
 	}
 
 	kadpService := kadprotocol.New()
@@ -97,5 +116,3 @@ func runStart() int {
 	return 0
 
 }
-
-

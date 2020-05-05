@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/alabianca/kadbox/core"
 	"github.com/libp2p/go-libp2p"
+	autonat "github.com/libp2p/go-libp2p-autonat-svc"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -103,6 +104,11 @@ func (n *Node) NewStream(ctx context.Context, peerID peer.ID, protocols ...proto
 
 func (n *Node) LocalPeerID() peer.ID {
 	return n.host.ID()
+}
+
+func (n *Node) EnableAutoNATService(ctx context.Context, opts ...libp2p.Option) error {
+	_, err := autonat.NewAutoNATService(ctx, n.host, opts...)
+	return err
 }
 
 func (n *Node) bootstrapConnect(ctx context.Context, addr string) chan error {

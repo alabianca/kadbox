@@ -56,3 +56,15 @@ func Gateways(addrs ...string) Option {
 		return noopConfig
 	}
 }
+
+func DefaultNATManager() Option {
+	return func(n *Node) libp2p.Option {
+		return libp2p.NATPortMap()
+	}
+}
+
+func EnableAutoRelay() Option {
+	return func(n *Node) libp2p.Option {
+		return libp2p.EnableAutoRelay()
+	}
+}
