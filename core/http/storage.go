@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/alabianca/kadbox/core"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"io"
 	"net/http"
 	"os"
@@ -96,22 +97,30 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	peerChan, err := s.Node.FindPeers(core.ProtocolKey(fileHash))
+	peerChan, err := s.Node.FindPeers(r.Context(), core.ProtocolKey(fileHash))
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Could not find any peers that advertise %s\n", fileHash)
 		return
 	}
 
+	var peers []peer.AddrInfo
 	for peer := range peerChan {
 		// don't care about myself
 		if peer.ID == s.Node.LocalPeerID() {
 			continue
 		}
-
+		peers = append(peers, peer)
 		fmt.Printf("found peer %s\n", peer.ID.Pretty())
 	}
 
+	// try to connect to each of them and attempt to download the file
+	if len(peers) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Could not find any peers that advertise %s\n", fileHash)
+		return
+	}
+	fmt.Println("Attemping to open stream to first peer found")
 	//bts, err := s.Node.GetValue(r.Context(), core.ProtocolKey(fileHash))
 	//if err != nil {
 	//	w.WriteHeader(http.StatusInternalServerError)
@@ -126,37 +135,37 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 	//
-	//stream, err := s.Node.NewStream(r.Context(), id, core.Protocol)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-	//	return
-	//}
-	//
-	//defer stream.Close()
-	//
-	//
-	//kadp := s.Protocol.HandleStream(stream)
-	//reader, errc := kadp.Want(fileHash)
-	//
-	//copied := make(chan struct{})
-	//go func() {
-	//	defer close(copied)
-	//	buf := new(bytes.Buffer)
-	//	if _, err := io.Copy(buf, reader); err != nil {
-	//		w.WriteHeader(http.StatusInternalServerError)
-	//		fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
-	//		return
-	//	}
-	//	w.WriteHeader(http.StatusOK)
-	//	io.Copy(w, buf)
-	//}()
-	//
-	//select {
-	//case err := <- errc:
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
-	//case <- copied:
-	//	fmt.Println("Copied...")
-	//}
+	stream, err := s.Node.NewStream(r.Context(), peers[0].ID, core.Protocol)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+		return
+	}
+
+	defer stream.Close()
+
+
+	kadp := s.Protocol.HandleStream(stream)
+	reader, errc := kadp.Want(fileHash)
+
+	copied := make(chan struct{})
+	go func() {
+		defer close(copied)
+		buf := new(bytes.Buffer)
+		if _, err := io.Copy(buf, reader); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		io.Copy(w, buf)
+	}()
+
+	select {
+	case err := <- errc:
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
+	case <- copied:
+		fmt.Println("Copied...")
+	}
 }

@@ -102,8 +102,8 @@ func (n *Node) Advertise(key string) {
 	discovery.Advertise(n.nodeContext, n.routingDiscovery, key)
 }
 
-func (n *Node) FindPeers(key string) (<-chan peer.AddrInfo, error) {
-	return n.routingDiscovery.FindPeers(n.nodeContext, key)
+func (n *Node) FindPeers(ctx context.Context, key string) (<-chan peer.AddrInfo, error) {
+	return n.routingDiscovery.FindPeers(ctx, key)
 }
 
 //func (n *Node) PutValue(ctx context.Context, key string, value []byte) error {
