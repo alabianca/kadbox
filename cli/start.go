@@ -64,14 +64,17 @@ func runStart() int {
 			node.Identity(key),
 			node.ListenAddr(repo.ListenAddrs...),
 			node.Security(secio.ID, secio.New),
+			node.EnableAutoRelay(),
 	}
 
-	// if we are not a gateway we may be behind a NAT. so try to open a port
-	if !*isGateway {
-		options = append(options, []node.Option{
-			node.DefaultNATManager(),
-			node.EnableAutoRelay(),
-		}...)
+	// if we are a gateway we also act as a relay
+	// and allow peers to relay their connections through me
+	if *isGateway {
+		options = append(options, node.ActAsRelay())
+		//options = append(options, []node.Option{
+		//	node.DefaultNATManager(),
+		//	node.EnableAutoRelay(),
+		//}...)
 	}
 
 
@@ -80,13 +83,9 @@ func runStart() int {
 		return printError(err)
 	}
 
-	// if we are a gateway we should try to help other peers find
-	// out if they sit behind nats
-	if *isGateway {
-		fmt.Println("Running as a gateway")
-		if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
-			return printError(err)
-		}
+	// i want to help other peer figure out if they sit behind a NAT
+	if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
+		return printError(err)
 	}
 
 	kadpService := kadprotocol.New()

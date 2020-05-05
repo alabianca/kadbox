@@ -38,13 +38,19 @@ func New(ctx context.Context, opts ...Option) (*Node, error) {
 	n.host, err = libp2p.New(
 		ctx,
 		p2pOpts...,
+		//libp2p.StaticRelays()
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &n, err
+	fmt.Println("My addresses are:")
+	for _, addr := range n.host.Addrs() {
+		fmt.Println(addr)
+	}
+
+	return &n, nil
 }
 
 func (n *Node) SetStreamHandler(handler network.StreamHandler) {

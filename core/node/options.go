@@ -74,8 +74,9 @@ func EnableAutoRelay() Option {
 	}
 }
 
-func EnableRelay() Option {
+func ActAsRelay() Option {
 	return func(n *Node) libp2p.Option {
 		return libp2p.EnableRelay(relay.OptActive, relay.OptHop)
 	}
 }
+
