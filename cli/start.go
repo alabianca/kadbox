@@ -7,7 +7,6 @@ import (
 	"github.com/alabianca/kadbox/core/http"
 	"github.com/alabianca/kadbox/core/kadprotocol"
 	"github.com/alabianca/kadbox/core/node"
-	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/network"
 	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/spf13/cobra"
@@ -64,17 +63,13 @@ func runStart() int {
 			node.Identity(key),
 			node.ListenAddr(repo.ListenAddrs...),
 			node.Security(secio.ID, secio.New),
-			node.EnableAutoRelay(),
+			//node.EnableAutoRelay(),
 	}
 
 	// if we are a gateway we also act as a relay
 	// and allow peers to relay their connections through me
 	if *isGateway {
 		options = append(options, node.ActAsRelay())
-		//options = append(options, []node.Option{
-		//	node.DefaultNATManager(),
-		//	node.EnableAutoRelay(),
-		//}...)
 	} else {
 		options = append(options, node.EnableRelay())
 		options = append(options, node.StaticRelays(repo.Gateways...)) // use the gateways as relays
@@ -87,9 +82,9 @@ func runStart() int {
 	}
 
 	// i want to help other peer figure out if they sit behind a NAT
-	if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
-		return printError(err)
-	}
+	//if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
+	//	return printError(err)
+	//}
 
 	kadpService := kadprotocol.New()
 

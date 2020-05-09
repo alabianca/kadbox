@@ -2,9 +2,7 @@ package core
 
 import (
 	"context"
-	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
 type Node interface {
@@ -14,6 +12,6 @@ type Node interface {
 type NodeClient interface {
 	LocalPeerID() peer.ID
 	Advertise(key string)
-	FindPeers(ctx context.Context, key string) (<-chan peer.AddrInfo, error)
-	NewStream(ctx context.Context, id peer.ID, protocols ...protocol.ID) (network.Stream, error)
+	FindPeers(ctx context.Context, key string) ([]peer.AddrInfo, error)
+	ConnectionManager() ConnectionManager
 }

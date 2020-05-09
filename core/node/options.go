@@ -29,7 +29,7 @@ func Routing(ctx context.Context) Option {
 				ctx,
 				h,
 				dht.NamespacedValidator(core.Protocol, &NullValidator{}),
-				dht.ProtocolPrefix(core.Protocol),)
+				dht.ProtocolPrefix(core.Protocol))
 
 			// also set up the node's routing discovery
 			n.routingDiscovery = discovery.NewRoutingDiscovery(n.dht)

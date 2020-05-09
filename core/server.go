@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -45,7 +46,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("Bootstrapped and connected to gateways")
 	return s.server.ListenAndServe()
 }
 

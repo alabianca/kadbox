@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/alabianca/kadbox/core"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"io"
 	"net/http"
 	"os"
@@ -97,21 +96,11 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	peerChan, err := s.Node.FindPeers(r.Context(), core.ProtocolKey(fileHash))
+	peers, err := s.Node.FindPeers(r.Context(), core.ProtocolKey(fileHash))
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Could not find any peers that advertise %s\n", fileHash)
 		return
-	}
-
-	var peers []peer.AddrInfo
-	for peer := range peerChan {
-		// don't care about myself
-		if peer.ID == s.Node.LocalPeerID() {
-			continue
-		}
-		peers = append(peers, peer)
-		fmt.Printf("found peer %s\n", peer.ID.Pretty())
 	}
 
 	// try to connect to each of them and attempt to download the file
@@ -135,14 +124,23 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 	//
-	stream, err := s.Node.NewStream(r.Context(), peers[0].ID, core.Protocol)
+	//stream, err := s.Node.NewStream(r.Context(), peers[0].ID, core.Protocol)
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+	//	return
+	//}
+	//
+	//defer stream.Close()
+	cm := s.Node.ConnectionManager()
+	// try to create a stream first. we may get through. maybe not
+
+	stream, err := cm.NewStream(r.Context(), peers[0], core.Protocol)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
+		fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s\n", err)
 		return
 	}
-
-	defer stream.Close()
 
 
 	kadp := s.Protocol.HandleStream(stream)
