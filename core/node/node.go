@@ -109,7 +109,7 @@ func (n *Node) Bootstrap(ctx context.Context) error {
 		}
 	}
 
-	if nerr == len(n.Gateways) {
+	if len(n.Gateways) != 0 && nerr == len(n.Gateways) {
 		return errors.New("could not connect to any gateways")
 	}
 
