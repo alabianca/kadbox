@@ -77,13 +77,6 @@ func (n *Node) Context() context.Context {
 }
 
 func (n *Node) Bootstrap(ctx context.Context) error {
-	if err := n.dht.Bootstrap(ctx); err != nil {
-		return err
-	}
-
-	if len(n.Gateways) == 0 {
-		return nil
-	}
 
 	var errcs []chan error
 	for _, addr := range n.Gateways {
@@ -120,7 +113,7 @@ func (n *Node) Bootstrap(ctx context.Context) error {
 		return errors.New("could not connect to any gateways")
 	}
 
-	return nil
+	return n.dht.Bootstrap(ctx)
 }
 
 func (n *Node) Advertise(key string) {
