@@ -77,6 +77,10 @@ func (n *Node) Context() context.Context {
 }
 
 func (n *Node) Bootstrap(ctx context.Context) error {
+	if err := n.dht.Bootstrap(ctx); err != nil {
+		return err
+	}
+
 	if len(n.Gateways) == 0 {
 		return nil
 	}
