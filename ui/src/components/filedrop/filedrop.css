@@ -1,0 +1,21 @@
+.filedrop {
+    border-style: dashed;
+    border-width: 1px;
+    border-color: #BDBDBD;
+    color: var(--primary-font-color);
+    height: 150px;
+    width: 180px;
+    margin: 0 auto;
+    padding: 30px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.filedrop.active {
+    border-color: rgba(26, 35, 126, 0.7);
+    /*border-width: 2px;*/
+    transform: scale(1.05);
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in;
+}

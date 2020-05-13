@@ -1,0 +1,32 @@
+.search-bar {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+}
+
+.search-bar.focus {
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.search-bar span {
+    display: inline-block;
+    margin-right: 5px;
+    padding: 0px 5px;
+}
+
+.search-bar i {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-bar input {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}

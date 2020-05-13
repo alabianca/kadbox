@@ -1,0 +1,50 @@
+.nav {
+    height: 80px;
+    background-color: var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nav button {
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    outline: none;
+    cursor: pointer;
+    height: 25px;
+    width: 25px;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.nav button:active {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav ul {
+    display: flex;
+    padding: 5px 5px 0px 5px;
+}
+
+.main {
+    justify-content: space-between;
+}
+
+.options {
+    padding-bottom: 0px;
+}
+
+
+.nav-option a {
+    margin: 0 10px;
+    color: rgba(255, 255, 255, 0.8);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.nav-option a.active {
+    color: white;
+    border-bottom: 4px solid rgba(255, 255, 255, 0.9);
+}
