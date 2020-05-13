@@ -8,6 +8,7 @@ import (
 	"github.com/alabianca/kadbox/core/kadprotocol"
 	"github.com/alabianca/kadbox/core/node"
 	"github.com/libp2p/go-libp2p-core/network"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 	secio "github.com/libp2p/go-libp2p-secio"
 	"github.com/spf13/cobra"
 	"net"
@@ -58,7 +59,7 @@ func runStart() int {
 
 	// node options
 	options := []node.Option{
-			node.Routing(ctx),
+			//node.Routing(ctx),
 			node.Gateways(repo.Gateways...),
 			node.Identity(key),
 			node.ListenAddr(repo.ListenAddrs...),
@@ -69,10 +70,9 @@ func runStart() int {
 	// if we are a gateway we also act as a relay
 	// and allow peers to relay their connections through me
 	if *isGateway {
-		options = append(options, node.ActAsRelay())
+		options = append(options, node.ActAsRelay(), node.Routing(ctx, dht.Mode(dht.ModeServer)))
 	} else {
-		options = append(options, node.EnableRelay())
-		options = append(options, node.StaticRelays(repo.Gateways...)) // use the gateways as relays
+		options = append(options, node.EnableRelay(), node.StaticRelays(repo.Gateways...), node.Routing(ctx)) // use the gateways as relays
 	}
 
 

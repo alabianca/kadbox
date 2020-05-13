@@ -21,15 +21,15 @@ func noopConfig(cfg *libp2p.Config) error {
 
 type Option func(n *Node) libp2p.Option
 
-func Routing(ctx context.Context) Option {
+func Routing(ctx context.Context, options ...dht.Option) Option {
 	return func(n *Node) libp2p.Option {
 		return libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			var err error
+			opts := append(options, dht.NamespacedValidator(core.Protocol, &NullValidator{}), dht.ProtocolPrefix(core.Protocol))
 			n.dht, err = dual.New(
 				ctx,
 				h,
-				dht.NamespacedValidator(core.Protocol, &NullValidator{}),
-				dht.ProtocolPrefix(core.Protocol))
+				opts...)
 
 			// also set up the node's routing discovery
 			n.routingDiscovery = discovery.NewRoutingDiscovery(n.dht)
