@@ -7,6 +7,7 @@ import (
 	"github.com/alabianca/kadbox/core/http"
 	"github.com/alabianca/kadbox/core/kadprotocol"
 	"github.com/alabianca/kadbox/core/node"
+	"github.com/alabianca/kadbox/log"
 	"github.com/libp2p/go-libp2p-core/network"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	secio "github.com/libp2p/go-libp2p-secio"
@@ -59,12 +60,10 @@ func runStart() int {
 
 	// node options
 	options := []node.Option{
-			//node.Routing(ctx),
 			node.Gateways(repo.Gateways...),
 			node.Identity(key),
 			node.ListenAddr(repo.ListenAddrs...),
 			node.Security(secio.ID, secio.New),
-			//node.EnableAutoRelay(),
 	}
 
 	// if we are a gateway we also act as a relay
@@ -81,11 +80,6 @@ func runStart() int {
 		return printError(err)
 	}
 
-	// i want to help other peer figure out if they sit behind a NAT
-	//if err := nde.EnableAutoNATService(ctx, libp2p.Security(secio.ID, secio.New)); err != nil {
-	//	return printError(err)
-	//}
-
 	kadpService := kadprotocol.New()
 
 
@@ -97,7 +91,7 @@ func runStart() int {
 	}
 	server := core.NewServer(core.AppContext{Node: nde}, &storage, listenAddress)
 
-	fmt.Printf("Daemon is listening at %s\n", server.Addr())
+	log.Infof("Daemon is listening at %s\n", server.Addr())
 
 	go func() {
 		nde.SetStreamHandler(func(stream network.Stream) {

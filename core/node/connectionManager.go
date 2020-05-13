@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/alabianca/kadbox/log"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -20,14 +21,17 @@ type connectionManager struct {
 // and return it
 func (c *connectionManager) NewStream(ctx context.Context, info peer.AddrInfo, protoID protocol.ID) (network.Stream, error) {
 	// attempt to create a regular stream first
+	log.Infof("Attempting Stream without relay to %s\n", info.ID.Pretty())
 	var stream network.Stream
 	var err error
 	stream, err = c.host.NewStream(ctx, info.ID, protoID)
 	if err == nil {
 		// all good. we don't need the relay
+		log.Debugf("No relay needed for %s\n", info.ID.Pretty())
 		return stream, err
 	}
 
+	log.Infof("We need a relay for %s\n", info.ID.Pretty())
 	// switch out the address info that did not work with our circuit addresses
 	newInfo := c.infoWithRelayCircuitAddresses(info)
 	// try to establish a connection to the peer over the relay

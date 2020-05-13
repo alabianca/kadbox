@@ -3,8 +3,8 @@ package node
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/alabianca/kadbox/core"
+	"github.com/alabianca/kadbox/log"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -47,9 +47,9 @@ func New(ctx context.Context, opts ...Option) (*Node, error) {
 		return nil, err
 	}
 
-	fmt.Println("My addresses are:")
+	log.Info("My Addresses Are")
 	for _, addr := range n.host.Addrs() {
-		fmt.Println(addr)
+		log.Info(addr)
 	}
 
 	var mas []multiaddr.Multiaddr
@@ -104,7 +104,7 @@ func (n *Node) Bootstrap(ctx context.Context) error {
 	var nerr int
 	for err := range merged {
 		if err != nil {
-			fmt.Printf("Gateway connection error: %s\n", err)
+			log.Errorf("Gateway connection error: %s\n", err)
 			nerr++
 		}
 	}
@@ -117,7 +117,6 @@ func (n *Node) Bootstrap(ctx context.Context) error {
 }
 
 func (n *Node) Advertise(key string) {
-	fmt.Printf("Advertisin: %s\n", key)
 	discovery.Advertise(n.nodeContext, n.routingDiscovery, key)
 }
 
@@ -160,7 +159,7 @@ func (n *Node) bootstrapConnect(ctx context.Context, addr string) chan error {
 		}
 
 		out <- n.host.Connect(ctx, *info)
-		fmt.Printf("Connected to bootstrap peer %s\n", ma)
+		log.Infof("Connected to bootstrap peer %s\n", ma)
 	}()
 
 	return out

@@ -39,9 +39,9 @@ func Execute() {
 	}
 }
 
-// rootDirectory creates the root directory .kadbox.
-// relative to the given root and returns the full path
-// if root is an empty string we use the users home directory
+//// rootDirectory creates the root directory .kadbox.
+//// relative to the given root and returns the full path
+//// if root is an empty string we use the users home directory
 func rootDirectory(root string) string {
 	var home string
 	var err error
@@ -72,7 +72,7 @@ func storeDirectory(root string) string {
 	}
 }
 
-// rootDirExists checks if the root directory .kadbox exists in dir
+//rootDirExists checks if the root directory .kadbox exists in dir
 func rootDirExists(dir string) (string, bool) {
 	p := path.Join(dir, rootDirectoryName)
 	if _, err := os.Stat(p); os.IsNotExist(err) {

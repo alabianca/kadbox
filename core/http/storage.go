@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/alabianca/kadbox/core"
+	"github.com/alabianca/kadbox/log"
 	"io"
 	"net/http"
 	"os"
@@ -69,22 +70,9 @@ func (s *StorageService) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//id, err := s.Node.LocalPeerID().Marshal()
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 75)", err)
-	//	return
-	//}
 	s.Node.Advertise(core.ProtocolKey(fileHash))
 
-	//if err := s.Node.PutValue(r.Context(), core.ProtocolKey(fileHash), id); err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 81)", err)
-	//	return
-	//}
-
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "Published in the network. \n")
 	fmt.Fprintf(w, "File identifier: %s%s\n", core.Scheme, fileHash)
 }
 
@@ -109,29 +97,8 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Could not find any peers that advertise %s\n", fileHash)
 		return
 	}
-	fmt.Println("Attemping to open stream to first peer found")
-	//bts, err := s.Node.GetValue(r.Context(), core.ProtocolKey(fileHash))
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-	//	return
-	//}
-	//
-	//id, err := core.PeerIDFromBytes(bts)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-	//	return
-	//}
-	//
-	//stream, err := s.Node.NewStream(r.Context(), peers[0].ID, core.Protocol)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	fmt.Fprintf(w, "An Error occured in StorageService.handleGet -> %s", err)
-	//	return
-	//}
-	//
-	//defer stream.Close()
+	log.Info("Attemping to open stream to first peer found")
+
 	cm := s.Node.ConnectionManager()
 	// try to create a stream first. we may get through. maybe not
 
@@ -164,6 +131,6 @@ func (s *StorageService) handleGet(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "An error occured in StorageService.handleGet -> %s", err)
 	case <- copied:
-		fmt.Println("Copied...")
+		log.Debug("Copied...")
 	}
 }

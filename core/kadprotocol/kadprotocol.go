@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/alabianca/kadbox/core"
+	"github.com/alabianca/kadbox/log"
 	"github.com/libp2p/go-libp2p-core/network"
 	"io"
 	"os"
@@ -64,7 +65,7 @@ func (k *kadprotocol) read(s network.Stream) {
 		}
 
 		// 2. read the body based on the operation
-		fmt.Println("Handling ", int(b))
+		log.Debugf("Handling Message Type: %d\n", int(b))
 		switch int(b) {
 		case Message_WantType:
 			// read the 64 byte key
@@ -83,7 +84,7 @@ func (k *kadprotocol) read(s network.Stream) {
 			return
 
 		default:
-			fmt.Println("Unknown operation")
+			log.Debug("Unknown operation")
 
 		}
 	}
@@ -98,26 +99,27 @@ func (k *kadprotocol) write(s network.Stream) {
 		select {
 		case key := <-k.want:
 			// send a 'want' message type
+			log.Debug("Sending Message Type Want")
 			writer.Write(prependOpKey(Message_WantType, key))
 			writer.Flush()
 		case fileHash := <-k.ack:
 			// send a 'ack' message type
-			fmt.Println("Message Type ACK")
+			log.Debug("Sending Message Type ACK")
 			p, err := core.GetClosestKadboxRepoRelativeToWd()
 			if err != nil {
-				fmt.Printf("Error %s\n", err)
+				log.Debugf("Error %s\n", err)
 				return
 			}
 
 			file, err := os.Open(path.Join(p, "store", fileHash))
 			if err != nil {
-				fmt.Printf("Error %s\n", err)
+				log.Debugf("Error %s\n", err)
 				return
 			}
 
 			writer.Write([]byte{byte(Message_AckType)})
 			if _, err := io.Copy(writer, file); err != nil {
-				fmt.Printf("Error %s\n", err)
+				log.Debugf("Error %s\n", err)
 				return
 			}
 
