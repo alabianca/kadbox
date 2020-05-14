@@ -55,7 +55,7 @@ func runAdd(args []string) int {
 	// upload the file
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
-	url := fmt.Sprintf("http://%s:%s/", repo.API.Address, strconv.Itoa(int(repo.API.Port)))
+	url := fmt.Sprintf("http://%s:%s/storage", repo.API.Address, strconv.Itoa(int(repo.API.Port)))
 	fmt.Printf("Upload size %d\n", buf.Len())
 	res, err := http.Post(url, contentType, buf)
 	if err != nil {

@@ -74,22 +74,38 @@ func runStart() int {
 		options = append(options, node.EnableRelay(), node.StaticRelays(repo.Gateways...), node.Routing(ctx)) // use the gateways as relays
 	}
 
-
 	nde, err := node.New(ctx, options...)
 	if err != nil {
 		return printError(err)
 	}
 
-	kadpService := kadprotocol.New()
-
-
-	listenAddress := core.ListenAddress(net.JoinHostPort(repo.API.Address, strconv.Itoa(int(repo.API.Port))))
-
-	storage := http.StorageService{
+	appContext := core.AppContext{
 		Node: nde,
+	}
+
+	// server services/handlers
+
+	// storage service. stores and retrieves file in/from the network
+	kadpService := kadprotocol.New()
+	storage := http.StorageService{
+		Node: appContext.Node,
 		Protocol: kadpService,
 	}
-	server := core.NewServer(core.AppContext{Node: nde}, &storage, listenAddress)
+
+	// ping service. Used to check if we are still alive
+	var ping http.PingService
+
+	// the top level handler that ties everyting together
+	var handler http.AppHandler
+	handler.PingHandler = &ping
+	handler.StorageHandler = &storage
+
+
+	// server options
+	listenAddress := core.ListenAddress(net.JoinHostPort(repo.API.Address, strconv.Itoa(int(repo.API.Port))))
+
+
+	server := core.NewServer(appContext, &handler, listenAddress)
 
 	log.Infof("Daemon is listening at %s\n", server.Addr())
 

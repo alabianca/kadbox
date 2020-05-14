@@ -34,7 +34,7 @@ func runGet(args []string) int {
 		return printError(err)
 	}
 
-	url := fmt.Sprintf("http://%s:%s/?key=%s", repo.API.Address, strconv.Itoa(int(repo.API.Port)), fileHash)
+	url := fmt.Sprintf("http://%s:%s/storage?key=%s", repo.API.Address, strconv.Itoa(int(repo.API.Port)), fileHash)
 
 	res, err := http.Get(url)
 	if err != nil {

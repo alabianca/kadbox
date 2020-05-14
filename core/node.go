@@ -6,6 +6,7 @@ import (
 )
 
 type Node interface {
+	NodeClient
 	Bootstrap(ctx context.Context) error
 }
 

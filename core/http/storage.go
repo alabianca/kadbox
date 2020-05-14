@@ -17,12 +17,9 @@ type StorageService struct {
 	Protocol core.KadProtocolService
 }
 
-func enableCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-}
+
 
 func (s *StorageService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	enableCors(w)
 
 	switch r.Method {
 	case http.MethodGet:
