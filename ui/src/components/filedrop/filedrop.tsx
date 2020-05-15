@@ -1,13 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import './filedrop.css'
-import {useFileDrop} from './useFileDrop'
+import {useFileDrop} from './useFileDrop';
+import Lib from '../../lib'
 
 const FileDrop = () => {
     const {dragActive, fileList, onDragEnter, onDragLeave, onDragOver, onDrop} = useFileDrop();
+    const fmgr = Lib.getConnectionManager().FileManager();
 
     useEffect(() => {
         console.log(fileList)
-        for (let f of fileList) { console.log(f.path)}
+        for (let f of fileList) {
+            fmgr.addObject(f.path);
+        }
 
     }, [fileList])
 

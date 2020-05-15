@@ -1,7 +1,10 @@
 const path = require('path');
-const kadbox = require('./kadbox')
-const { app, BrowserWindow, ipcMain, Tray } = require('electron')
-
+const kadbox = require('./etron/kadbox')
+const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+const { sleep } = require('./etron/utils')
+const { ProcessManager } = require('./etron/processManager');
+const { IpcManager } = require('./etron/ipcManager');
+const { StorageManager } = require('./etron/storageManager');
 
 // don't show the app in the dock
 //app.dock.hide();
@@ -13,11 +16,11 @@ const main = () => {
   createWindow();
 };
 
-const createWindow = () => {
+const createWindow = async () => {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 320,
-    height: 450,
+    width: 380,
+    height: 550,
     show: false,
     frame: false,
     fullscreenable: false,
@@ -27,12 +30,6 @@ const createWindow = () => {
       nodeIntegration: true
     }
   });
-
-  loadConfig()
-
-  ipcMain.on('window:close', () => win.close());
-  ipcMain.on('window:minimize', () => win.minimize());
-  ipcMain.on('window:maximize', () => win.isMaximized() ? win.unmaximize() : win.maximize());
 
   win.webContents.openDevTools()
 
@@ -45,6 +42,18 @@ const createWindow = () => {
       win.hide();
     }
   });
+
+  const ipcManager = new IpcManager();
+  const storage = new StorageManager();
+  ipcManager.addDispatcher('storage', storage);
+
+  try {
+    const proc = await startKadboxProcess();
+    const pm = new ProcessManager(proc);
+    ipcManager.addDispatcher('kad', pm);
+
+  } catch (e) {
+  }
 };
 
 const createTray = () => {
@@ -74,15 +83,23 @@ const getWindowPosition = () => {
 }
 
 
-const loadConfig = async () => {
-  try {
-    const config = await kadbox.loadConfig()
-    //console.log(config)
-    kadbox.box();
-    await kadbox.ping();
-  } catch (e) {
-    console.log("Error ", e)
+const startKadboxProcess = async (attempt = 0, proc = null) => {
+  if (attempt > 3) {
+    throw new Error("cannot start kadbox process")
   }
+  try {
+    // first check if it is up already
+    await kadbox.ping();
+    console.log(`kadbox is running`)
+  } catch (e) {
+    console.log(`kadbox start up attempt ${attempt + 1} out of 3`);
+    proc = kadbox.box();
+    attempt++;
+    await sleep(2000); // give it a 2 seconds to start up before trying again
+    await startKadboxProcess(attempt, proc);
+  }
+
+  return proc;
 }
 
 

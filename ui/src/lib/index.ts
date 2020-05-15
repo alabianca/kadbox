@@ -1,8 +1,8 @@
-import getIpcRenderer from './ipc'
-import API from './api'
+import API from './api';
+import { getConnectionManager } from "./connectionManager";
 
 const Lib = {
-    getIpcRenderer,
+    getConnectionManager,
     API,
 }
 

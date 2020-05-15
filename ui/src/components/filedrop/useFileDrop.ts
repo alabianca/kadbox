@@ -8,7 +8,7 @@ export const useFileDrop = () => {
 
     useEffect(() => {
         if (dragCounter > 0) {
-            setDragActive(true)
+            setDragActive(true);
         } else {
             setDragActive(false);
         }

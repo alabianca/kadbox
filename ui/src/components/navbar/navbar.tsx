@@ -2,8 +2,10 @@ import React from 'react';
 import {NavLink, useRouteMatch} from "react-router-dom";
 import './navbar.css';
 import Searchbar from "../searchbar/searchbar";
+import { useHeartBeat } from "../../hooks/useHeartBeat";
 
 const Navbar = () => {
+    const { isConnected } = useHeartBeat();
 
     return (
         <>
@@ -11,6 +13,9 @@ const Navbar = () => {
                 <ul className='main'>
                     <li>
                         <Searchbar focus={true}/>
+                    </li>
+                    <li>
+                        <span>{isConnected ? 'Connected': 'Disconnected'}</span>
                     </li>
                     <li>
                         <button><i className="fas fa-cog"></i></button>
