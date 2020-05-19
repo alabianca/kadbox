@@ -28,6 +28,14 @@ const ping = async () => {
     await nodeFetch(url)
 }
 
+const rootDir = () => {
+    return path.join(homedir, ROOT_LOC)
+}
+
+const storeDir = () => {
+    return path.join(rootDir(), STORE_LOC);
+}
+
 
 module.exports = {
     STORE_LOC,
@@ -36,4 +44,6 @@ module.exports = {
     loadConfig,
     box,
     ping,
+    rootDir,
+    storeDir,
 }

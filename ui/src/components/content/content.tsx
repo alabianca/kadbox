@@ -5,6 +5,7 @@ import { IpcEventBus } from "../../lib/eventBus";
 
 import './content.css'
 import FileDrop from "../filedrop/filedrop";
+import FileList from "../filelist/filelist";
 
 const Content = () => {
 
@@ -16,7 +17,11 @@ const Content = () => {
                     <div className='filedrop-container'>
                         <FileDrop/>
                     </div>
-
+                </Route>
+                <Route path="/files">
+                    <div className='files-container'>
+                        <FileList/>
+                    </div>
                 </Route>
             </Switch>
         </div>

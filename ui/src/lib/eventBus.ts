@@ -8,6 +8,10 @@ interface Subscription {
     unsubscribe: () => any
 }
 
+export interface Subscriber {
+    subscribe: (ev: string, callback: EventCallback) => Subscription,
+}
+
 export const getIpcRenderer = () => {
     if (!window || !window.process || !window.require) {
         throw new Error("IPC Renderer is not available")
@@ -20,13 +24,18 @@ export class IpcEventBus {
     public static SERVER_UP = "ipc_server_up";
     public static PONG = "kad:pong";
     public static KILLED = "kad:kill";
+    public static STORAGE_SUCCESS = "storage:success";
+    public static STORAGE_ERROR = "storage:error";
+    public static STORAGE_FILES = "storage:files";
 
     private subscribers: SubscriptionMap = {}
 
     constructor() {
         const ipcRenderer = getIpcRenderer();
-        ipcRenderer.on(IpcEventBus.PONG, (data) => this.publish(IpcEventBus.PONG, data));
-        ipcRenderer.on(IpcEventBus.KILLED, (data) => this.publish(IpcEventBus.KILLED, data));
+        ipcRenderer.on(IpcEventBus.PONG, (_, data) => this.publish(IpcEventBus.PONG, data));
+        ipcRenderer.on(IpcEventBus.KILLED, (_, data) => this.publish(IpcEventBus.KILLED, data));
+        ipcRenderer.on(IpcEventBus.STORAGE_SUCCESS, (_, data) => this.publish(IpcEventBus.STORAGE_SUCCESS, data));
+        ipcRenderer.on(IpcEventBus.STORAGE_FILES, (_, data) => this.publish(IpcEventBus.STORAGE_FILES, data))
     }
 
     public subscribe(ev: string, callback: EventCallback): Subscription {

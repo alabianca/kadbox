@@ -4,6 +4,7 @@ import {FileManager} from "./fileManager";
 
 export const EVENT_PING = "kad:ping";
 export const EVENT_ADD_FILE = "storage:add";
+export const EVENT_GET_FILE = "storage:get-files";
 
 class ConnectionManager {
     private evBus: IpcEventBus = null;
@@ -29,7 +30,7 @@ class ConnectionManager {
 
     public FileManager(): FileManager {
         if (!this.fileManager) {
-            this.fileManager = new FileManager(this.ipcRenderer)
+            this.fileManager = new FileManager(this.ipcRenderer, this.EventBus())
         }
 
         return this.fileManager;

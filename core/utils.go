@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	rootDirectoryName  = ".kadbox"
-	configName         = "kadconfig"
-	storeDirectoryName = "store"
-	configNotFoundErr  = "config not found"
-	rootNotFoundErr    = "root not found"
+	RootDirectoryName  = ".kadbox"
+	ConfigName         = "kadconfig"
+	StoreDirectoryName = "store"
+	ConfigNotFoundErr  = "config not found"
+	RootNotFoundErr    = "root not found"
 )
 
 // rootDirectory creates the root directory .kadbox.
@@ -39,7 +39,7 @@ func rootDirectory(root string) string {
 	}
 
 	// check if the directory exists
-	p, err := mkdirIfNotExist(path.Join(home, rootDirectoryName))
+	p, err := mkdirIfNotExist(path.Join(home, RootDirectoryName))
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func rootDirectory(root string) string {
 }
 
 func storeDirectory(root string) string {
-	if p, err := mkdirIfNotExist(path.Join(root, rootDirectoryName, storeDirectoryName)); err != nil {
+	if p, err := mkdirIfNotExist(path.Join(root, RootDirectoryName, StoreDirectoryName)); err != nil {
 		panic(err)
 	} else {
 		return p
@@ -57,7 +57,7 @@ func storeDirectory(root string) string {
 
 // rootDirExists checks if the root directory .kadbox exists in dir
 func rootDirExists(dir string) (string, bool) {
-	p := path.Join(dir, rootDirectoryName)
+	p := path.Join(dir, RootDirectoryName)
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		return "", false
 	}
@@ -78,7 +78,7 @@ func mkdirIfNotExist(name string) (string, error) {
 }
 
 func configFileExists(dir string) bool {
-	if _, err := os.Stat(path.Join(dir, configName)); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(dir, ConfigName)); os.IsNotExist(err) {
 		return false
 	}
 
@@ -122,7 +122,7 @@ func createNewConfigFromDefault() Repo {
 func initializeConfig(root string) Repo {
 	home := rootDirectory(root)
 
-	p := path.Join(home, configName)
+	p := path.Join(home, ConfigName)
 	if !configFileExists(home) {
 		fmt.Println("Config file does not yet exist so we create it at ", p)
 		defConfig := createNewConfigFromDefault()
@@ -159,14 +159,14 @@ func initializeConfig(root string) Repo {
 }
 
 // getConfigFile starts at dir and moves up to home
-// until it finds a config file. If not config file is found configNotFoundErr is returned
+// until it finds a config file. If not config file is found ConfigNotFoundErr is returned
 func getConfigFile(dir string, home string) (Repo, error) {
-	if configFileExists(path.Join(dir, rootDirectoryName)) {
+	if configFileExists(path.Join(dir, RootDirectoryName)) {
 		return initializeConfig(dir), nil
 	}
 
 	if dir == home {
-		return Repo{}, errors.New(configNotFoundErr)
+		return Repo{}, errors.New(ConfigNotFoundErr)
 	}
 
 	parts := strings.Split(dir, string(os.PathSeparator))
@@ -188,7 +188,7 @@ func getKadboxRepoDirectory(dir string, home string) (string, error) {
 	}
 
 	if dir == home {
-		return "", errors.New(rootNotFoundErr)
+		return "", errors.New(RootNotFoundErr)
 	}
 
 	parts := strings.Split(dir, string(os.PathSeparator))

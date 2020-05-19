@@ -1,0 +1,12 @@
+.file {
+
+}
+
+.file span {
+    font-size: 0.9em;
+    display: inline-block;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 2px;
+    background-color: #eeeeee;
+}

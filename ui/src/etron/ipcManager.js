@@ -7,6 +7,10 @@ const EVENT_PROCESS_PING = "kad:ping";
 const EVENT_PROCESS_PONG = "kad:pong";
 const EVENT_PROCESS_KILL = "kad:kill";
 const EVENT_STORAGE_ADD = "storage:add";
+const EVENT_STORAGE_SUCCESS = "storage:success";
+const EVENT_STORAGE_ERROR = "storage:error";
+const EVENT_STORAGE_FILES = "storage:files";
+const EVENT_STORAGE_GET_FILES = "storage:get-files"
 
 class IpcManager {
     constructor() {
@@ -21,6 +25,7 @@ class IpcManager {
         ipcMain.on(EVENT_PROCESS_KILL, (event, arg) => this._locateAndDispatch(EVENT_PROCESS_KILL, event, arg));
         // storage events
         ipcMain.on(EVENT_STORAGE_ADD, (event, arg) => this._locateAndDispatch(EVENT_STORAGE_ADD, event, arg));
+        ipcMain.on(EVENT_STORAGE_GET_FILES, (event, arg) => this._locateAndDispatch(EVENT_STORAGE_GET_FILES, event, arg))
     }
 
     addDispatcher(key, dispatcher) {
@@ -46,4 +51,8 @@ module.exports = {
     EVENT_PROCESS_PING,
     EVENT_PROCESS_PONG,
     EVENT_STORAGE_ADD,
+    EVENT_STORAGE_ERROR,
+    EVENT_STORAGE_SUCCESS,
+    EVENT_STORAGE_GET_FILES,
+    EVENT_STORAGE_FILES,
 }

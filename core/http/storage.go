@@ -34,7 +34,7 @@ func (s *StorageService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *StorageService) handlePost(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(100 << 20) // 100mgb
-	file, header, err := r.FormFile("upload")
+	file, _, err := r.FormFile("upload")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 42)", err)
@@ -51,8 +51,14 @@ func (s *StorageService) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	kbDir, err := core.GetClosestKadboxRepoRelativeToWd()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 57)", err)
+	}
+
 	fileHash := hex.EncodeToString(writer.Sum(nil))
-	targetFile, err := os.Create(path.Join(header.Filename, fileHash))
+	targetFile, err := os.Create(path.Join(kbDir, core.StoreDirectoryName, fileHash))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "An Error occured in StorageService.handlePost -> %s (line 60)", err)
