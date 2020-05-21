@@ -6,6 +6,7 @@ import { IpcEventBus } from "../../lib/eventBus";
 import './content.css'
 import FileDrop from "../filedrop/filedrop";
 import FileList from "../filelist/filelist";
+import Downloads from "../downloads/downloads";
 
 const Content = () => {
 
@@ -19,8 +20,13 @@ const Content = () => {
                     </div>
                 </Route>
                 <Route path="/files">
-                    <div className='files-container'>
+                    <div className='content-container'>
                         <FileList/>
+                    </div>
+                </Route>
+                <Route path="/downloads">
+                    <div className='content-container'>
+                        <Downloads/>
                     </div>
                 </Route>
             </Switch>

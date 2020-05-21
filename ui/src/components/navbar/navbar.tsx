@@ -34,7 +34,7 @@ const Navbar = () => {
                         </div>
                     </li>
                     <li className='nav-option'>
-                        <NavLink activeClassName="active" to="/recent">Downloads</NavLink>
+                        <NavLink activeClassName="active" to="/downloads">Downloads</NavLink>
                     </li>
                 </ul>
             </nav>

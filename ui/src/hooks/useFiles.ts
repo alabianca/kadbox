@@ -7,9 +7,9 @@ export const useFiles = (initialFiles: string[] = []) => {
 
     useEffect(() => {
         fmgr.getFiles((f) => {
-            setFiles(f)
+            setFiles([...f])
         })
-    })
+    }, []);
 
     return {
         files,
